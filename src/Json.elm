@@ -46,15 +46,18 @@ decodeField :
     -> Result String model
     -> Result String model
 decodeField fieldName decoder setter value model =
-    case model of
-        Err s ->
-            case Json.decodeValue (Json.field fieldName decoder) value of
-                Err newMessage ->
-                    Err (s ++ "\nAnd " ++ newMessage)
-
-                Ok _ ->
-                    model
-
-        Ok v ->
+    let
+        decoded =
             Json.decodeValue (Json.field fieldName decoder) value
-                |> Result.map (setter v)
+    in
+        case model of
+            Err s ->
+                case decoded of
+                    Err newMessage ->
+                        Err (s ++ "\nAnd " ++ newMessage)
+
+                    Ok _ ->
+                        model
+
+            Ok v ->
+                Result.map (setter v) decoded
